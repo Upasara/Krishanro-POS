@@ -15,7 +15,9 @@ export default function Home() {
 			</div>
 			<div className='absolute h-screen w-full flex justify-center items-center'>
 				<div className='text-center space-y-10'>
-					<h1 className='text-[#fff] text-6xl'>Welcome to Krishanro Dough & Co - POS</h1>
+					<h1 className='text-[#fff] text-4xl md:text-6xl font-semibold'>
+						Welcome to Krishanro Dough & Co - POS
+					</h1>
 					<div className='flex justify-center items-center space-x-7 '>
 						<LoginButton>
 							<Button className='bg-[#fff]' variant='secondary' size='lg'>
