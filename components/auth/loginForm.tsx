@@ -10,10 +10,16 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { FormError } from '../formError';
 import { FormSuccess } from '../formSuccess';
+import { login } from '@/actions/login';
+import { useState, useTransition } from 'react';
 
 type LoginSchemaFields = z.infer<typeof LoginSchema>;
 
 const LoginForm = () => {
+	const [isPending, startTransition] = useTransition();
+	const [error, setError] = useState<string | undefined>('');
+	const [success, setSuccess] = useState<string | undefined>('');
+
 	const form = useForm<LoginSchemaFields>({
 		resolver: zodResolver(LoginSchema),
 		defaultValues: {
@@ -22,8 +28,18 @@ const LoginForm = () => {
 		},
 	});
 
+	//submit function in login page
+
 	const onSubmit = (values: LoginSchemaFields) => {
-		console.log(values);
+		setError('');
+		setSuccess('');
+
+		startTransition(() => {
+			login(values).then((data) => {
+				setError(data.error);
+				setSuccess(data.success);
+			});
+		});
 	};
 	return (
 		<div>
@@ -43,6 +59,7 @@ const LoginForm = () => {
 										<FormControl>
 											<Input
 												placeholder='Email'
+												disabled={isPending}
 												{...field}
 												type='email'
 												className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
@@ -60,6 +77,7 @@ const LoginForm = () => {
 										<FormControl>
 											<Input
 												placeholder='Password'
+												disabled={isPending}
 												{...field}
 												type='password'
 												className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
@@ -70,9 +88,9 @@ const LoginForm = () => {
 								)}
 							/>
 						</div>
-						<FormError message='' />
-						<FormSuccess message='' />
-						<Button typeof='submit' className='w-full'>
+						<FormError message={error} />
+						<FormSuccess message={success} />
+						<Button disabled={isPending} typeof='submit' className='w-full'>
 							Login
 						</Button>
 					</form>

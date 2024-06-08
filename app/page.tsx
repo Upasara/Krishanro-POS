@@ -1,4 +1,5 @@
 import LoginButton from '@/components/auth/button';
+import { RegistrationButton } from '@/components/auth/registrationButton';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
@@ -24,9 +25,11 @@ export default function Home() {
 								Login
 							</Button>
 						</LoginButton>
-						<Button className='bg-[#fff]' variant='secondary' size='lg'>
-							Register
-						</Button>
+						<RegistrationButton>
+							<Button className='bg-[#fff]' variant='secondary' size='lg'>
+								Register
+							</Button>
+						</RegistrationButton>
 					</div>
 				</div>
 			</div>
