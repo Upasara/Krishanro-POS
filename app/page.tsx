@@ -3,6 +3,9 @@ import { RegistrationButton } from '@/components/auth/registrationButton';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
+import { IoLogIn } from 'react-icons/io5';
+import { MdOutlineAppRegistration } from 'react-icons/md';
+
 export default function Home() {
 	return (
 		<main className='relative h-screen w-full bg-zinc-900/90'>
@@ -22,11 +25,13 @@ export default function Home() {
 					<div className='flex justify-center items-center space-x-7 '>
 						<LoginButton>
 							<Button className='bg-[#fff]' variant='secondary' size='lg'>
+								<IoLogIn className='mr-2 h-5 w-5' />
 								Login
 							</Button>
 						</LoginButton>
 						<RegistrationButton>
 							<Button className='bg-[#fff]' variant='secondary' size='lg'>
+								<MdOutlineAppRegistration className='mr-2 h-5 w-5' />
 								Register
 							</Button>
 						</RegistrationButton>
