@@ -14,22 +14,32 @@ export const RegistrationSchema = z
 		firstName: z
 			.string()
 			.min(1, {
-				message: 'First Name is required',
+				message: 'First name is required',
 			})
-			.max(100),
+			.max(30),
 		lastName: z
 			.string()
 			.min(1, {
-				message: 'Last Name is required',
+				message: 'Last name is required',
 			})
-			.max(100),
+			.max(30),
 		email: z.string().min(1, 'Email is required').email({
 			message: 'Invalid Email',
 		}),
-		password: z.string().min(1, 'Password is required').min(6, {
-			message:
-				'Minimum six characters, at least one uppercase letter, one lowercase letter and one number are required',
-		}),
+		password: z
+			.string()
+			.min(1, 'Password is required')
+			.min(8, {
+				message:
+					'Minimum 8 characters, at least one uppercase letter, one lowercase letter and one number are required',
+			})
+			.regex(new RegExp('.*[A-Z].*'), 'One uppercase character')
+			.regex(new RegExp('.*[a-z].*'), 'One lowercase character')
+			.regex(new RegExp('.*\\d.*'), 'One number')
+			.regex(
+				new RegExp('.*[`~<>?,./!@#$%^&*()\\-_+="\'|{}\\[\\];:\\\\].*'),
+				'One special character'
+			),
 		confirmPassword: z.string().min(1, 'Password confirmation is required'),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
