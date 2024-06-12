@@ -8,6 +8,9 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { MdOutlineAppRegistration } from 'react-icons/md';
+import { useState } from 'react';
+import { FaRegEye } from 'react-icons/fa';
+import { FaRegEyeSlash } from 'react-icons/fa';
 
 type RegistrationSchemaFields = z.infer<typeof RegistrationSchema>;
 
@@ -19,14 +22,29 @@ export const RegistrationForm = () => {
 			lastName: '',
 			email: '',
 			password: '',
+			confirmPassword: '',
 		},
+		mode: 'onChange',
 	});
+
+	const {
+		watch,
+		formState: { isDirty, isValid },
+	} = form;
+
+	const watchPassword = watch('password', 'confirmPassword');
 
 	//submit the sign up form
 
 	const onSubmit = (values: RegistrationSchemaFields) => {
 		console.log(values);
 	};
+
+	const [show, setShow] = useState(false);
+	const handleShow = () => {
+		setShow(!show);
+	};
+
 	return (
 		<div>
 			<RegCardWrapper
@@ -96,12 +114,35 @@ export const RegistrationForm = () => {
 							render={({ field }) => (
 								<FormItem>
 									<FormControl>
-										<Input
-											{...field}
-											placeholder='Password'
-											type='password'
-											className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
-										/>
+										<div className='flex border rounded-sm '>
+											<Input
+												{...field}
+												placeholder='Password'
+												type={show ? 'text' : 'password'}
+												className=' border-0 bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
+											/>
+											<div
+												onClick={handleShow}
+												className='flex items-center justify-center p-1 text-sm'>
+												{show ? (
+													<FaRegEyeSlash
+														className={`${
+															!watchPassword
+																? 'hidden'
+																: 'w-4 h-4 cursor-pointer text-[#000]'
+														}`}
+													/>
+												) : (
+													<FaRegEye
+														className={`${
+															!watchPassword
+																? 'hidden'
+																: 'w-4 h-4 cursor-pointer text-[#000]'
+														}`}
+													/>
+												)}
+											</div>
+										</div>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -124,7 +165,7 @@ export const RegistrationForm = () => {
 								</FormItem>
 							)}
 						/>
-						<Button className='w-full' typeof='submit'>
+						<Button className='w-full' typeof='submit' disabled={!isDirty || !isValid}>
 							<MdOutlineAppRegistration className='mr-2 h-5 w-5' />
 							Sign up
 						</Button>
