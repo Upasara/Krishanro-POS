@@ -16,13 +16,13 @@ export const RegistrationSchema = z
 			.min(1, {
 				message: 'First name is required',
 			})
-			.max(30),
+			.max(30, 'First name must contain at most 30 character(s)'),
 		lastName: z
 			.string()
 			.min(1, {
 				message: 'Last name is required',
 			})
-			.max(30),
+			.max(30, 'Last name must contain at most 30 character(s)'),
 		email: z.string().min(1, 'Email is required').email({
 			message: 'Invalid Email',
 		}),

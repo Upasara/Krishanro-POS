@@ -13,6 +13,8 @@ import { FormSuccess } from '../formSuccess';
 import { login } from '@/actions/login';
 import { useState, useTransition } from 'react';
 import { IoLogIn } from 'react-icons/io5';
+import { FaRegEye } from 'react-icons/fa';
+import { FaRegEyeSlash } from 'react-icons/fa';
 
 type LoginSchemaFields = z.infer<typeof LoginSchema>;
 
@@ -42,6 +44,21 @@ const LoginForm = () => {
 			});
 		});
 	};
+
+	// to make password field visible
+
+	const [showPassword, setShowPassword] = useState(false);
+
+	const handlePasswordShow = () => {
+		setShowPassword(!showPassword);
+	};
+
+	//function to hide the password visibility
+
+	const { watch } = form;
+
+	const watchPassword = watch('password');
+
 	return (
 		<div>
 			<CardWrapper
@@ -77,13 +94,36 @@ const LoginForm = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormControl>
-											<Input
-												placeholder='Password'
-												disabled={isPending}
-												{...field}
-												type='password'
-												className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
-											/>
+											<div className='flex border rounded-sm'>
+												<Input
+													placeholder='Password'
+													disabled={isPending}
+													{...field}
+													type={showPassword ? 'text' : 'password'}
+													className='border-0 bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
+												/>
+												<div
+													onClick={handlePasswordShow}
+													className='flex justify-center items-center p-3 text-sm'>
+													{showPassword ? (
+														<FaRegEyeSlash
+															className={`${
+																!watchPassword
+																	? 'hidden'
+																	: 'w-4 h-4 cursor-pointer text-[#000]'
+															}`}
+														/>
+													) : (
+														<FaRegEye
+															className={`${
+																!watchPassword
+																	? 'hidden'
+																	: 'w-4 h-4 cursor-pointer text-[#000]'
+															}`}
+														/>
+													)}
+												</div>
+											</div>
 										</FormControl>
 										<FormMessage />
 									</FormItem>

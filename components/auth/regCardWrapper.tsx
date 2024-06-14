@@ -5,6 +5,7 @@ import { Social } from './social';
 import { BackButton } from './backButton';
 import { MdHome } from 'react-icons/md';
 import Link from 'next/link';
+import { RegSocial } from './Regsocial';
 
 interface CardWrapperProps {
 	children: React.ReactNode;
@@ -31,7 +32,7 @@ const RegCardWrapper = ({
 			<CardContent>{children}</CardContent>
 			{showSocial && (
 				<CardFooter>
-					<Social />
+					<RegSocial />
 				</CardFooter>
 			)}
 			<CardFooter>

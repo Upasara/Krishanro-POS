@@ -8,9 +8,12 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { MdOutlineAppRegistration } from 'react-icons/md';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { FaRegEye } from 'react-icons/fa';
 import { FaRegEyeSlash } from 'react-icons/fa';
+import { register } from '../../actions/register';
+import { FormError } from '../formError';
+import { FormSuccess } from '../formSuccess';
 
 type RegistrationSchemaFields = z.infer<typeof RegistrationSchema>;
 
@@ -27,29 +30,50 @@ export const RegistrationForm = () => {
 		mode: 'onChange',
 	});
 
+	//destructure form to get watch and formState
+
 	const {
 		watch,
 		formState: { isDirty, isValid },
 	} = form;
 
+	//to get the value of password's input field then visible the password type as a text to user
+
 	const watchPassword = watch('password', 'confirmPassword');
+	const watchPasswordConfirm = watch('confirmPassword');
 
 	//submit the sign up form
 
 	const onSubmit = (values: RegistrationSchemaFields) => {
-		console.log(values);
+		setError('');
+		setSuccess('');
+
+		startTransition(() => {
+			register(values).then((data) => {
+				setError(data.error);
+				setSuccess(data.success);
+			});
+		});
 	};
 
-	const [show, setShow] = useState(false);
+	//to make the password field visible
+
+	const [show, setShow] = useState<boolean>(false);
 	const handleShow = () => {
 		setShow(!show);
 	};
+
+	//error handle within the form
+
+	const [isPending, startTransition] = useTransition();
+	const [error, setError] = useState<string | undefined>('');
+	const [success, setSuccess] = useState<string | undefined>('');
 
 	return (
 		<div>
 			<RegCardWrapper
 				headerCap='Sign Up'
-				headerLabel='Welcome to user registration.'
+				headerLabel='Create an account.'
 				backButtonLabel='I already have an account? Login here.'
 				backButtonHref='/login'
 				showSocial>
@@ -64,6 +88,7 @@ export const RegistrationForm = () => {
 										<FormControl>
 											<Input
 												{...field}
+												disabled={isPending}
 												placeholder='First Name'
 												type='text'
 												className='w-full bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
@@ -81,6 +106,7 @@ export const RegistrationForm = () => {
 										<FormControl>
 											<Input
 												{...field}
+												disabled={isPending}
 												placeholder='Last Name'
 												type='text'
 												className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
@@ -90,82 +116,113 @@ export const RegistrationForm = () => {
 									</FormItem>
 								)}
 							/>
-						</div>
-						<FormField
-							control={form.control}
-							name='email'
-							render={({ field }) => (
-								<FormItem>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder='Email'
-											type='email'
-											className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name='password'
-							render={({ field }) => (
-								<FormItem>
-									<FormControl>
-										<div className='flex border rounded-sm '>
+							<FormField
+								control={form.control}
+								name='email'
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
 											<Input
 												{...field}
-												placeholder='Password'
-												type={show ? 'text' : 'password'}
-												className=' border-0 bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
+												disabled={isPending}
+												placeholder='Email'
+												type='email'
+												className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
 											/>
-											<div
-												onClick={handleShow}
-												className='flex items-center justify-center p-1 text-sm'>
-												{show ? (
-													<FaRegEyeSlash
-														className={`${
-															!watchPassword
-																? 'hidden'
-																: 'w-4 h-4 cursor-pointer text-[#000]'
-														}`}
-													/>
-												) : (
-													<FaRegEye
-														className={`${
-															!watchPassword
-																? 'hidden'
-																: 'w-4 h-4 cursor-pointer text-[#000]'
-														}`}
-													/>
-												)}
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name='password'
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
+											<div className='flex border rounded-sm '>
+												<Input
+													{...field}
+													disabled={isPending}
+													placeholder='Password'
+													type={show ? 'text' : 'password'}
+													className=' border-0 bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
+												/>
+												<div
+													onClick={handleShow}
+													className='flex items-center justify-center p-3 text-sm'>
+													{show ? (
+														<FaRegEyeSlash
+															className={`${
+																!watchPassword
+																	? 'hidden'
+																	: 'w-4 h-4 cursor-pointer text-[#000]'
+															}`}
+														/>
+													) : (
+														<FaRegEye
+															className={`${
+																!watchPassword
+																	? 'hidden'
+																	: 'w-4 h-4 cursor-pointer text-[#000]'
+															}`}
+														/>
+													)}
+												</div>
 											</div>
-										</div>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name='confirmPassword'
-							render={({ field }) => (
-								<FormItem>
-									<FormControl>
-										<Input
-											{...field}
-											placeholder='Re-Enter your password'
-											type='password'
-											className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<Button className='w-full' typeof='submit' disabled={!isDirty || !isValid}>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name='confirmPassword'
+								render={({ field }) => (
+									<FormItem>
+										<FormControl>
+											<div className='flex border rounded-sm '>
+												<Input
+													{...field}
+													disabled={isPending}
+													placeholder='Re-Enter your password'
+													type={show ? 'text' : 'password'}
+													className='border-0 bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
+												/>
+												<div
+													onClick={handleShow}
+													className='flex items-center justify-center p-3 text-sm'>
+													{show ? (
+														<FaRegEyeSlash
+															className={`${
+																!watchPasswordConfirm
+																	? 'hidden'
+																	: 'w-4 h-4 cursor-pointer text-[#000]'
+															}`}
+														/>
+													) : (
+														<FaRegEye
+															className={`${
+																!watchPasswordConfirm
+																	? 'hidden'
+																	: 'w-4 h-4 cursor-pointer text-[#000]'
+															}`}
+														/>
+													)}
+												</div>
+											</div>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<FormError message={error} />
+						<FormSuccess message={success} />
+						<Button
+							className='w-full'
+							typeof='submit'
+							disabled={(isPending && !isDirty) || !isValid}>
 							<MdOutlineAppRegistration className='mr-2 h-5 w-5' />
 							Sign up
 						</Button>
