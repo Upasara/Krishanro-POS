@@ -31,10 +31,10 @@ export const RegistrationForm = () => {
 	});
 
 	//destructure form to get watch and formState
-
 	const {
 		watch,
 		formState: { isDirty, isValid },
+		reset,
 	} = form;
 
 	//to get the value of password's input field then visible the password type as a text to user
@@ -54,6 +54,7 @@ export const RegistrationForm = () => {
 				setSuccess(data.success);
 			});
 		});
+		reset();
 	};
 
 	//to make the password field visible
