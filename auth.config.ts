@@ -4,9 +4,15 @@ import { LoginSchema } from './schemas';
 import { getUserByEmail } from './data/user';
 import bcrypt from 'bcryptjs';
 
+import google from 'next-auth/providers/google';
+
 //the reason why we check login schema check because some users can by pass this login action
 export default {
 	providers: [
+		google({
+			clientId: process.env.GOOGLE_CLIENT_ID,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+		}),
 		credentials({
 			async authorize(credentials) {
 				const validatedFields = LoginSchema.safeParse(credentials);

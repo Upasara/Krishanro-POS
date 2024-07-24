@@ -24,17 +24,19 @@ export const login = async (values: LoginSchemaFields) => {
 			password,
 			redirectTo: DefaultRedirect,
 		});
-	} catch (e) {
-		if (e instanceof AuthError) {
-			switch (e.type) {
+	} catch (error) {
+		if (error instanceof AuthError) {
+			switch (error.type) {
 				case 'CredentialsSignin':
 					return { error: 'Invalid Credentials!' };
+				case 'CallbackRouteError':
+					return { error: 'Route Error: Invalid Credentials!' };
 				default: {
 					return { error: 'Something went wrong!' };
 				}
 			}
 		}
-		throw e;
+		throw error;
 	}
 };
 

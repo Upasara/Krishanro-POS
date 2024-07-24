@@ -15,6 +15,7 @@ import { useState, useTransition } from 'react';
 import { IoLogIn } from 'react-icons/io5';
 import { FaRegEye } from 'react-icons/fa';
 import { FaRegEyeSlash } from 'react-icons/fa';
+import { useSearchParams } from 'next/navigation';
 
 type LoginSchemaFields = z.infer<typeof LoginSchema>;
 
@@ -22,6 +23,13 @@ const LoginForm = () => {
 	const [isPending, startTransition] = useTransition();
 	const [error, setError] = useState<string | undefined>('');
 	const [success, setSuccess] = useState<string | undefined>('');
+
+	//search params
+	const searchParams = useSearchParams();
+	const urlError =
+		searchParams.get('error') === 'OAuthAccountNotLinked'
+			? 'Email is already in use with different provider!'
+			: '';
 
 	const form = useForm<LoginSchemaFields>({
 		resolver: zodResolver(LoginSchema),
@@ -39,8 +47,9 @@ const LoginForm = () => {
 
 		startTransition(() => {
 			login(values).then((data) => {
-				setError(data.error);
-				setSuccess(data.success);
+				setError(data?.error);
+				//TODO:add when we add 2fa
+				// setSuccess(data?.success);
 			});
 		});
 	};
@@ -130,7 +139,7 @@ const LoginForm = () => {
 								)}
 							/>
 						</div>
-						<FormError message={error} />
+						<FormError message={error || urlError} />
 						<FormSuccess message={success} />
 						<Button disabled={isPending} typeof='submit' className='w-full'>
 							<IoLogIn className='mr-2 h-5 w-5' />

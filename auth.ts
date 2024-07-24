@@ -2,9 +2,56 @@ import NextAuth from 'next-auth';
 import authConfig from './auth.config';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from './lib/db';
+import { getUserById } from './data/user';
+import { UserRole } from '@prisma/client';
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
+	pages: {
+		signIn: '/login',
+		//next specify the route we need to redirect when something goes wrong
+		error: '/error',
+	},
+	events: {
+		async linkAccount({ user }) {
+			await db.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
+		},
+
+		// use where to match the user id then update the email verification with the date that user had been created
+	},
+	callbacks: {
+		async jwt({ token }) {
+			//written this custom field in jwt then you will get this in session token
+			//token.customField = 'test';
+
+			//token.sub is not there That's means I am log out
+			if (!token.sub) return token;
+
+			//uid in db === token.sub || getting the user id from db
+			const existingUser = await getUserById(token.sub);
+
+			// there is no existing user then return the token again
+			if (!existingUser) return token;
+
+			//Assign a role to token
+			token.role = existingUser.role;
+
+			return token;
+			//token is pass to session callback to get the sub as user ID
+		},
+		async session({ token, session }) {
+			token.sub && session.user ? (session.user.id = token.sub) : null;
+
+			if (token.role && session.user) {
+				session.user.role = token.role as UserRole;
+			}
+			return session;
+		},
+	},
 	adapter: PrismaAdapter(db),
 	session: { strategy: 'jwt' },
 	...authConfig,
 });
+
+//to extend the session we need to extend jwt before
+//that's why we use callback
+//we need toke's sub : user id then pass back to session callback.
