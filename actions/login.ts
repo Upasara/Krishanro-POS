@@ -5,6 +5,9 @@ import { auth, signIn } from '@/auth';
 import { DefaultRedirect } from '@/routes';
 import { AuthError } from 'next-auth';
 import { error } from 'console';
+import { getUserByEmail } from '@/data/user';
+import { generateVerificationToken } from '@/lib/token';
+import { verificationEmail } from '@/lib/mail';
 
 type LoginSchemaFields = z.infer<typeof LoginSchema>;
 
@@ -17,6 +20,29 @@ export const login = async (values: LoginSchemaFields) => {
 		return { error: 'Invalid fields' };
 	}
 	const { email, password } = validatedField.data;
+
+	//to block the user to sign in without confirm their email
+
+	const existingUser = await getUserByEmail(email);
+
+	if (!existingUser || !existingUser.email || !existingUser.password) {
+		//user shouldn't login with credential, if that user has OAuth
+		return { error: 'Email does not exist' };
+	}
+
+	//User exists but if that user does not verify the token by email
+	//just block the user from login function
+	//even without this code we have block the user from auth.ts callback
+	//you always have to match the logic with auth
+	if (!existingUser.emailVerified) {
+		// generate a new verification token
+		const verificationToken = await generateVerificationToken(existingUser.email);
+
+		//sending the mail again with newly generated token
+		await verificationEmail(verificationToken?.email, verificationToken?.token);
+
+		return { success: 'Email verification has been sent again!' };
+	}
 
 	try {
 		await signIn('credentials', {

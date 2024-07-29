@@ -3,7 +3,10 @@
  * There routes don't require authentication
  * @type{string[]}
  */
-export const publicRoutes = ['/'];
+export const publicRoutes = ['/', '/newVerification'];
+
+//when user need to change the email from settings page
+//newVerification mail page should be in public route because logout users need to access this page.
 
 /**
  * An array of routes that are used for authentication

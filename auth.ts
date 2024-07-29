@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import authConfig from './auth.config';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from './lib/db';
-import { getUserById } from './data/user';
+import { getUserByEmail, getUserById } from './data/user';
 import { UserRole } from '@prisma/client';
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -16,9 +16,25 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 			await db.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
 		},
 
-		// use where to match the user id then update the email verification with the date that user had been created
+		// user from OAuth where to match the user id then update the email verification with the date that user had been created
 	},
 	callbacks: {
+		//total security
+		async signIn({ user, account }: any) {
+			//Allow OAuth without email verification
+			if (account?.provider !== 'credentials') return true;
+
+			//if the provider is : google !== credential:email // password
+
+			//clg => provider: 'credentials'
+
+			const existingUser = await getUserById(user.id);
+
+			//Prevent signIn without email verification
+			if (!existingUser?.emailVerified) return false;
+
+			return true;
+		},
 		async jwt({ token }) {
 			//written this custom field in jwt then you will get this in session token
 			//token.customField = 'test';
