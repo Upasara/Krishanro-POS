@@ -1,31 +1,37 @@
 'use client';
-import RegCardWrapper from './regCardWrapper';
-import { useForm } from 'react-hook-form';
-import { RegistrationSchema } from '@/schemas';
 import * as z from 'zod';
+import { ResetPasswordSchema } from '@/schemas';
+import CardWrapper from './cardWrapper';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { MdOutlineAppRegistration } from 'react-icons/md';
-import { useState, useTransition } from 'react';
-import { FaRegEye } from 'react-icons/fa';
-import { FaRegEyeSlash } from 'react-icons/fa';
-import { register } from '../../actions/register';
 import { FormError } from '../formError';
 import { FormSuccess } from '../formSuccess';
+import { useState, useTransition } from 'react';
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
+import { RiLockPasswordLine } from 'react-icons/ri';
+import { useSearchParams } from 'next/navigation';
+import { newPasswordAction } from '@/actions/newPasswordAction';
 
-type RegistrationSchemaFields = z.infer<typeof RegistrationSchema>;
+type ResetPasswordSchemaFields = z.infer<typeof ResetPasswordSchema>;
 
-export const RegistrationForm = () => {
-	const form = useForm<RegistrationSchemaFields>({
-		resolver: zodResolver(RegistrationSchema),
+const NewPasswordForm = () => {
+	const [isPending, startTransition] = useTransition();
+	const [error, setError] = useState<string | undefined>('');
+	const [success, setSuccess] = useState<string | undefined>('');
+
+	//to get the token from url
+
+	const searchParams = useSearchParams();
+	const token = searchParams.get('token');
+
+	const form = useForm<ResetPasswordSchemaFields>({
+		resolver: zodResolver(ResetPasswordSchema),
 		defaultValues: {
-			firstName: '',
-			lastName: '',
-			email: '',
-			password: '',
-			confirmPassword: '',
+			newPassword: '',
+			confirmNewPassword: '',
 		},
 		mode: 'onChange',
 	});
@@ -39,23 +45,8 @@ export const RegistrationForm = () => {
 
 	//to get the value of password's input field then visible the password type as a text to user
 
-	const watchPassword = watch('password', 'confirmPassword');
-	const watchPasswordConfirm = watch('confirmPassword');
-
-	//submit the sign up form
-
-	const onSubmit = (values: RegistrationSchemaFields) => {
-		setError('');
-		setSuccess('');
-
-		startTransition(() => {
-			register(values).then((data) => {
-				setError(data.error);
-				setSuccess(data.success);
-			});
-		});
-		reset();
-	};
+	const watchPassword = watch('newPassword');
+	const watchPasswordConfirm = watch('confirmNewPassword');
 
 	//to make the password field visible
 
@@ -64,80 +55,34 @@ export const RegistrationForm = () => {
 		setShow(!show);
 	};
 
-	//error handle within the form
+	//submit function in login page
 
-	const [isPending, startTransition] = useTransition();
-	const [error, setError] = useState<string | undefined>('');
-	const [success, setSuccess] = useState<string | undefined>('');
+	const onSubmit = (values: ResetPasswordSchemaFields) => {
+		setError('');
+		setSuccess('');
+
+		startTransition(() => {
+			newPasswordAction(values, token).then((data) => {
+				setError(data?.error);
+				//TODO:add when we add 2fa
+				setSuccess(data?.success);
+			});
+		});
+	};
 
 	return (
 		<div>
-			<RegCardWrapper
-				headerCap='Sign Up'
-				headerLabel='Create an account.'
-				backButtonLabel='I already have an account? Login.'
-				backButtonHref='/login'
-				showSocial>
+			<CardWrapper
+				headerCap='Change your password'
+				headerLabel='Enter your new password below to change your existing password.'
+				backButtonLabel='Back to login?'
+				backButtonHref='/login'>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
 						<div className='space-y-4'>
 							<FormField
 								control={form.control}
-								name='firstName'
-								render={({ field }) => (
-									<FormItem>
-										<FormControl>
-											<Input
-												{...field}
-												disabled={isPending}
-												placeholder='First Name'
-												type='text'
-												className='w-full bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name='lastName'
-								render={({ field }) => (
-									<FormItem>
-										<FormControl>
-											<Input
-												{...field}
-												disabled={isPending}
-												placeholder='Last Name'
-												type='text'
-												className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name='email'
-								render={({ field }) => (
-									<FormItem>
-										<FormControl>
-											<Input
-												{...field}
-												disabled={isPending}
-												placeholder='Email'
-												type='email'
-												className='bg-transparent focus-visible:ring-offset-0 focus-visible:ring-0'
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name='password'
+								name='newPassword'
 								render={({ field }) => (
 									<FormItem>
 										<FormControl>
@@ -178,7 +123,7 @@ export const RegistrationForm = () => {
 							/>
 							<FormField
 								control={form.control}
-								name='confirmPassword'
+								name='confirmNewPassword'
 								render={({ field }) => (
 									<FormItem>
 										<FormControl>
@@ -221,15 +166,17 @@ export const RegistrationForm = () => {
 						<FormError message={error} />
 						<FormSuccess message={success} />
 						<Button
-							className='w-full'
+							disabled={(isPending && !isDirty) || !isValid}
 							typeof='submit'
-							disabled={(isPending && !isDirty) || !isValid}>
-							<MdOutlineAppRegistration className='mr-2 h-5 w-5' />
-							Sign up
+							className='w-full'>
+							<RiLockPasswordLine className='mr-2 h-5 w-5' />
+							Reset Password
 						</Button>
 					</form>
 				</Form>
-			</RegCardWrapper>
+			</CardWrapper>
 		</div>
 	);
 };
+
+export default NewPasswordForm;

@@ -1,22 +1,12 @@
-import React from 'react';
-import { auth, signOut } from '@/auth';
+'use client';
+import { logOutAction } from '@/actions/logOutAction';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useSession } from 'next-auth/react';
 
-const SettingsPage = async () => {
-	const session = await auth();
-
-	return (
-		<div>
-			{JSON.stringify(session)}
-			<form
-				action={async () => {
-					'use server';
-
-					await signOut();
-				}}>
-				<button type='submit'>Sign Out</button>
-			</form>
-		</div>
-	);
+const SettingsPage = () => {
+	//custom hook to get user
+	const user = useCurrentUser();
+	return <div>{/* {JSON.stringify(user)} */}</div>;
 };
 
 export default SettingsPage;
