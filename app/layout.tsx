@@ -4,6 +4,7 @@ import './globals.css';
 //wrap the session provider
 import { SessionProvider } from 'next-auth/react';
 import { auth } from '@/auth';
+import { Toaster } from '@/components/ui/sonner';
 
 const roboto = Roboto({ subsets: ['latin'], weight: ['100', '300', '400', '500', '700', '900'] });
 
@@ -21,7 +22,10 @@ export default async function RootLayout({
 	return (
 		<SessionProvider session={session}>
 			<html lang='en'>
-				<body className={roboto.className}>{children}</body>
+				<body className={roboto.className}>
+					<Toaster />
+					{children}
+				</body>
 			</html>
 		</SessionProvider>
 	);

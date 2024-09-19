@@ -45,13 +45,13 @@ export const Navbar = () => {
 						asChild={true}
 						variant={pathName === '/client' ? 'default' : 'outline'}
 						className={`${pathName === '/client' ? 'text-[#fff]' : 'text-[#000]'}`}>
-						<Link href='/server'>Client</Link>
+						<Link href='/client'>Client</Link>
 					</Button>
 					<Button
 						asChild={true}
 						variant={pathName === '/admin' ? 'default' : 'outline'}
 						className={`${pathName === '/admin' ? 'text-[#fff]' : 'text-[#000]'}`}>
-						<Link href='/server'>Admin</Link>
+						<Link href='/admin'>Admin</Link>
 					</Button>
 				</div>
 				{/* dropdown menu */}

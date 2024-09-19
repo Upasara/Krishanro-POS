@@ -26,6 +26,8 @@ import { DefaultUser } from 'next-auth/adapters';
 export type ExtendedUser = DefaultSession['user'] & {
 	// role: 'ADMIN' | 'USER';
 	role: UserRole;
+	isTwoFactorEnable: boolean;
+	isOAuth: boolean;
 };
 
 declare module 'next-auth' {

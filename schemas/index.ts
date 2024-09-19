@@ -1,3 +1,4 @@
+import { UserRole } from '@prisma/client';
 import * as z from 'zod';
 
 export const LoginSchema = z.object({
@@ -76,3 +77,61 @@ export const ResetPasswordSchema = z
 		path: ['confirmNewPassword'],
 		message: 'Password do not match',
 	});
+
+export const SettingsSchema = z
+	.object({
+		name: z.optional(
+			z
+				.string()
+				.min(1, 'Name is required to click save')
+				.max(60, 'Name must contain at most 30 character(s)')
+		),
+		email: z.optional(
+			z.string().min(1, 'Email is requried to change').email({ message: 'Invalid Email' })
+		),
+		isTwoFactorEnabled: z.optional(z.boolean()),
+		role: z.enum([UserRole.ADMIN, UserRole.USER]),
+		password: z.optional(z.string().min(1, 'Password confirmation is required')),
+		newPassword: z.optional(
+			z
+				.string()
+				.min(1, 'New password is required')
+				.min(8, {
+					message:
+						'Minimum 8 characters, at least one uppercase letter, one lowercase letter and one number are required',
+				})
+				.regex(new RegExp('.*[A-Z].*'), 'One uppercase character')
+				.regex(new RegExp('.*[a-z].*'), 'One lowercase character')
+				.regex(new RegExp('.*\\d.*'), 'One number')
+				.regex(
+					new RegExp('.*[`~<>?,./!@#$%^&*()\\-_+="\'|{}\\[\\];:\\\\].*'),
+					'One special character'
+				)
+		),
+		confirmNewPassword: z.string().min(1, 'Password confirmation is required'),
+	})
+	.refine(
+		(data) => {
+			if (data.password && !data.confirmNewPassword) {
+				return false;
+			}
+
+			return true;
+		},
+		{
+			message: 'New password is required',
+			path: ['confirmNewPassword'],
+		}
+	)
+	.refine(
+		(data) => {
+			if (data.confirmNewPassword && !data.password) {
+				return false;
+			}
+			return true;
+		},
+		{
+			message: 'Password is required',
+			path: ['password'],
+		}
+	);

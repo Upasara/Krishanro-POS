@@ -5,6 +5,7 @@ import { db } from './lib/db';
 import { getUserByEmail, getUserById } from './data/user';
 import { UserRole } from '@prisma/client';
 import { getTwoFactorConfirmationByUserId } from './data/twoFactorConfirmation';
+import { getAccountByUserId } from './data/account';
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
 	pages: {
@@ -61,18 +62,45 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 			// there is no existing user then return the token again
 			if (!existingUser) return token;
 
+			//to update update user details from the settings then you need to sign it to token manually
+
+			//getting existing Oauth acc
+			const existingAccount = getAccountByUserId(existingUser.id);
+
+			//Assign an OAuth account to token then turn it to boolean value
+			token.isOAuth = !!existingAccount;
+
+			//Assign a name ad email to token
+			token.name = existingUser.name;
+			token.email = existingUser.email;
+
 			//Assign a role to token
 			token.role = existingUser.role;
+
+			//Assign a two factor enable to token
+			token.isTwoFactorEnable = existingUser.isTwoFactorEnable;
 
 			return token;
 			//token is pass to session callback to get the sub as user ID
 		},
 		async session({ token, session }) {
+			//session is what we getting from 'const session= await auth()' to extend this session we need to extend jwt
+			//jwt what's return the token to extend jwt
 			token.sub && session.user ? (session.user.id = token.sub) : null;
 
 			if (token.role && session.user) {
 				session.user.role = token.role as UserRole;
 			}
+			if (session.user) {
+				session.user.isTwoFactorEnable = token.isTwoFactorEnable as boolean;
+			}
+
+			if (session.user) {
+				session.user.name = token.name;
+				session.user.email = token.email as string;
+				session.user.isOAuth = token.isOAut as boolean;
+			}
+
 			return session;
 		},
 	},
